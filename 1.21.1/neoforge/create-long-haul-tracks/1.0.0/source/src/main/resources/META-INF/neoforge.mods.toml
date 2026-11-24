@@ -1,0 +1,9 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "MIT"
+
+[[mods]]
+modId = "longhaultracks"
+version = "${mod_version}"
+displayName = "Create: Long Haul Tracks"
+authors = "SoulVoid0"
