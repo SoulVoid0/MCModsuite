@@ -6,6 +6,8 @@
     "compatibilityLevel": "JAVA_21",
     "client": [
         "DistantGenerationManagerMixin",
+        "SeedgenGeometryCapacityMixin",
+        "SeedgenRingGuardMixin",
         "WorldEngineSaveSectionMixin"
     ],
     "injectors": {

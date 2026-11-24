@@ -36,8 +36,8 @@ public final class ModIds {
     }
 
     /**
-     * Voxy SeedGen is closed source and its mod id is not documented, so it is found by id or display name
-     * containing "seedgen" (it is the only mod that does). Returns {@code null} when it is not installed.
+     * Voxy SeedGen's mod id is {@code voxyseedgen} (0.3.x). Any id or display name containing "seedgen" is accepted
+     * too, in case a later release renames it. Returns {@code null} when it is not installed.
      */
     public static synchronized String seedgenModId() {
         if (seedgenResolved)

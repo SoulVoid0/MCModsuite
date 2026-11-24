@@ -24,7 +24,7 @@ import dev.soulvoid.voxyatmo.core.ModIds;
  * <p>SeedGen (mod id {@code voxyseedgen}, 0.3.x) keeps its settings in {@code mobius.voxyseedgen.config.VoxySeedGenConfig},
  * a Gson-backed singleton saved to {@code config/voxyseedgen.json}:</p>
  * <ul>
- *   <li>{@code renderDistance}: "Generation distance", terrain generated around the player (16..4096 chunks).</li>
+ *   <li>{@code fillRadius}: "Generation distance", terrain generated around the player (16..4096 chunks, or up to the world border).</li>
  *   <li>{@code extendedDistance} + {@code distantReach}: the experimental "extended render distance", drawn past
  *       Voxy's own reach from coarser sections (2048 chunks up to the world border). {@code reach()} returns
  *       {@code distantReach} when it is on, else 0.</li>
@@ -45,7 +45,7 @@ public final class SeedgenDistance {
     private static String source = "not read yet";
     private static boolean reflectionBroken;
     private static Method get;
-    private static Field renderDistance;
+    private static Field fillRadius;
     private static Field extendedDistance;
     private static Field distantReach;
 
@@ -97,14 +97,14 @@ public final class SeedgenDistance {
             if (get == null) {
                 final Class<?> c = Class.forName(CONFIG_CLASS, false, SeedgenDistance.class.getClassLoader());
                 get = c.getMethod("get");
-                renderDistance = c.getField("renderDistance");
+                fillRadius = c.getField("fillRadius");
                 extendedDistance = c.getField("extendedDistance");
                 distantReach = c.getField("distantReach");
             }
             final Object cfg = get.invoke(null);
             if (cfg == null)
                 return false;
-            store(renderDistance.getInt(cfg), extendedDistance.getBoolean(cfg) ? distantReach.getInt(cfg) : 0,
+            store(fillRadius.getInt(cfg), extendedDistance.getBoolean(cfg) ? distantReach.getInt(cfg) : 0,
                 "Voxy SeedGen live config");
             return true;
         } catch (final ReflectiveOperationException | LinkageError | RuntimeException e) {
@@ -124,7 +124,7 @@ public final class SeedgenDistance {
         }
         try (Reader r = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
             final JsonObject o = JsonParser.parseReader(r).getAsJsonObject();
-            final int gen = intOr(o.get("renderDistance"), 256);
+            final int gen = intOr(o.get("fillRadius"), 256);
             final boolean ext = o.has("extendedDistance") && o.get("extendedDistance").getAsBoolean();
             store(gen, ext ? intOr(o.get("distantReach"), 0) : 0, "config/" + CONFIG_FILE);
         } catch (final Exception e) {
