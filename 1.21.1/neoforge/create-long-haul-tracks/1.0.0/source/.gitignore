@@ -4,3 +4,4 @@ run/
 libs/*.jar
 *.iml
 .idea/
+run-gametest/

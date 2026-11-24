@@ -9,6 +9,14 @@ base.archivesName = 'create-long-haul-tracks'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
+// Headless in-world tests (GameTest server): plan, survey and build real routes. Not part of the released jar.
+sourceSets {
+    gametest {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+
 repositories {
     mavenCentral()
     flatDir { dirs 'libs' }
@@ -27,18 +35,24 @@ neoForge {
             client()
             gameDirectory = file('run')
         }
-        server {
-            server()
-            gameDirectory = file('run-server')
-            programArgument '--nogui'
+        gameTestServer {
+            type = "gameTestServer"
+            gameDirectory = file('run-gametest')
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'longhaultracks'
+            sourceSet = sourceSets.gametest
         }
     }
 
     mods {
         longhaultracks {
             sourceSet sourceSets.main
+            sourceSet sourceSets.gametest
         }
     }
+}
+
+configurations {
+    gametestCompileOnly.extendsFrom compileOnly
 }
 
 dependencies {
