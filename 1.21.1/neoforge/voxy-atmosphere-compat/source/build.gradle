@@ -12,7 +12,6 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 repositories {
     mavenCentral()
     maven { url = 'https://cursemaven.com'; content { includeGroup 'curse.maven' } }
-    maven { url = 'https://maven.nonamecrackers2.dev/releases'; name = 'nonamecrackers2' }
     flatDir { dirs 'libs' }
 }
 
@@ -42,9 +41,6 @@ dependencies {
     // Every bridged mod is provided at runtime by the modpack and is never bundled.
     // See libs/README.md for the jars to drop in.
     compileOnly fileTree(dir: 'libs', include: ['*.jar'])
-
-    // Simple Clouds public API (ModifyCloudRenderDistanceEvent). Bundled inside Simple Clouds at runtime.
-    compileOnly 'nonamecrackers2:simplecloudsapi-neoforge:1.4-1.21.1'
 }
 
 tasks.named('processResources', ProcessResources) {

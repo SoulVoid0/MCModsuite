@@ -8,7 +8,7 @@ public final class TargetDistance {
 
     /** @return the distant-terrain distance in blocks: SeedGen's generation distance, else Voxy's LOD distance. */
     public static int terrainBlocks() {
-        final int seedgen = SeedgenDistance.chunks();
+        final int seedgen = SeedgenDistance.reachChunks();
         if (seedgen > 0)
             return seedgen * 16;
         return ModIds.isLoaded(ModIds.VOXY) ? VoxyBridge.renderDistanceBlocks() : -1;

@@ -5,7 +5,8 @@
     "plugin": "dev.soulvoid.voxyatmo.core.VoxyMixinPlugin",
     "compatibilityLevel": "JAVA_21",
     "client": [
-        "DistantGenerationManagerMixin"
+        "DistantGenerationManagerMixin",
+        "WorldEngineSaveSectionMixin"
     ],
     "injectors": {
         "defaultRequire": 0

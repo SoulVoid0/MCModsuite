@@ -53,11 +53,13 @@ public final class Config {
             .comment("Cloud render distance as a percentage of that distance.")
             .defineInRange("distancePercent", 100, 10, 200);
         SEEDGEN_DISTANCE_OVERRIDE = b
-            .comment("SeedGen generation distance in chunks. 0 = read it from SeedGen's config file automatically.")
-            .defineInRange("seedgenDistanceChunksOverride", 0, 0, 4096);
+            .comment("SeedGen distance in chunks. 0 = read it from Voxy SeedGen live (its generation distance, or its",
+                     "extended render distance reach when that is on).")
+            .defineInRange("seedgenDistanceChunksOverride", 0, 0, 1874999);
         MAX_CLOUD_DISTANCE = b
-            .comment("Hard cap on the cloud render distance in blocks (performance guard).")
-            .defineInRange("maxCloudDistanceBlocks", 32768, 2048, 65536);
+            .comment("Hard cap on the cloud render distance in blocks (performance guard). The default covers SeedGen's",
+                     "maximum normal generation distance (4096 chunks); raise it for the extended render distance.")
+            .defineInRange("maxCloudDistanceBlocks", 65536, 2048, 30000000);
         GROW_CLOUD_AREA = b
             .comment("Grow Simple Clouds' cloud mesh area (its outer level-of-detail ring) when the target distance",
                      "is beyond what its Level Of Detail preset covers (HIGH reaches about 10240 blocks).")
@@ -103,7 +105,7 @@ public final class Config {
     public static boolean cloudsFollowGeneration() { return get(CLOUDS_FOLLOW_GENERATION, true); }
     public static int distancePercent() { return get(DISTANCE_PERCENT, 100); }
     public static int seedgenDistanceOverride() { return get(SEEDGEN_DISTANCE_OVERRIDE, 0); }
-    public static int maxCloudDistance() { return get(MAX_CLOUD_DISTANCE, 32768); }
+    public static int maxCloudDistance() { return get(MAX_CLOUD_DISTANCE, 65536); }
     public static boolean growCloudArea() { return get(GROW_CLOUD_AREA, true); }
     public static boolean allowCoarserRing() { return get(ALLOW_COARSER_RING, false); }
     public static boolean fogFollowsClouds() { return get(FOG_FOLLOWS_CLOUDS, true); }

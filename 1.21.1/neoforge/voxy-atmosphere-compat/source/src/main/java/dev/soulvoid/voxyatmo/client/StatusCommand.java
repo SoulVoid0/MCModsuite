@@ -22,8 +22,10 @@ public final class StatusCommand {
                 + " projectatmosphere=" + ModIds.isLoaded(ModIds.PROJECT_ATMOSPHERE)
                 + " seedgen=" + ModIds.seedgenModId()), false);
             final int seedgen = SeedgenDistance.chunks();
+            final int seedgenReach = SeedgenDistance.reachChunks();
             src.sendSuccess(() -> Component.literal(" SeedGen distance: "
-                + (seedgen > 0 ? seedgen + " chunks (" + SeedgenDistance.source() + ")" : "unknown")), false);
+                + (seedgen > 0 ? seedgen + " chunks, draws to " + seedgenReach + " chunks (" + SeedgenDistance.source() + ")"
+                    : "unknown")), false);
             if (ModIds.isLoaded(ModIds.VOXY))
                 src.sendSuccess(() -> Component.literal(" Voxy LOD distance: "
                     + dev.soulvoid.voxyatmo.distance.VoxyBridge.renderDistanceBlocks() + " blocks"), false);
