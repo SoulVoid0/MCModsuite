@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.soulvoid.longhaul.mixin.xaero",
+  "plugin": "dev.soulvoid.longhaul.mixin.XaeroMixinPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "GuiMapMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

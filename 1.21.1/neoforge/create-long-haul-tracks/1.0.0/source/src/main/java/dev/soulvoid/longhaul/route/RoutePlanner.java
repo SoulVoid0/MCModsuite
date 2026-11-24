@@ -507,9 +507,14 @@ public final class RoutePlanner {
             // per-block kinds
             final byte[] kinds = new byte[r.n];
             for (int k = 0; k < r.n; k++) {
-                final int seg0 = segmentOf(seg, k);
-                final double yy = fy[seg0] + (fy[seg0 + 1] - fy[seg0]) * (seg[seg0 + 1] == seg[seg0] ? 0
-                    : (k - seg[seg0]) / (double) (seg[seg0 + 1] - seg[seg0]));
+                final double yy;
+                if (seg.length == 1)
+                    yy = fy[0];
+                else {
+                    final int seg0 = segmentOf(seg, k);
+                    yy = fy[seg0] + (fy[seg0 + 1] - fy[seg0]) * (seg[seg0 + 1] == seg[seg0] ? 0
+                        : (k - seg[seg0]) / (double) (seg[seg0 + 1] - seg[seg0]));
+                }
                 kinds[k] = kind(cols[r.sample[k]], yy, st);
                 final double gap = yy - 1 - cols[r.sample[k]].ground();
                 switch (kinds[k]) {

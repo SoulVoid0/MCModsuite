@@ -171,6 +171,12 @@ public final class JobManager extends SavedData {
         return id == null ? null : jobs.get(id);
     }
 
+    /** Last planning message for an owner (errors included), or "". */
+    public String draftMessage(final UUID owner) {
+        final Draft d = drafts.get(owner);
+        return d == null || d.message == null ? "" : d.message;
+    }
+
     Draft draft(final ServerPlayer p) {
         return drafts.computeIfAbsent(p.getUUID(), k -> new Draft());
     }
@@ -262,7 +268,7 @@ public final class JobManager extends SavedData {
         player.displayClientMessage(Component.translatable(asStart ? "longhaultracks.msg.start_set" : "longhaultracks.msg.end_set",
             pos.getX(), surface ? "~" : String.valueOf(pos.getY()), pos.getZ()), true);
         setDirty();
-        syncDraft(player);
+        syncDraft(player.getUUID());
         if (d.start != null && d.end != null)
             plan(player);
     }
@@ -270,18 +276,22 @@ public final class JobManager extends SavedData {
     // ------------------------------------------------------------------------------------------ planning
 
     public void plan(final ServerPlayer player) {
-        final Draft d = draft(player);
+        plan(player.getUUID(), player.getGameProfile().getName());
+    }
+
+    public void plan(final UUID owner, final String name) {
+        final Draft d = drafts.computeIfAbsent(owner, k -> new Draft());
         final ServerLevel level = server.getLevel(d.dim);
         if (level == null || d.start == null || d.end == null || d.planning)
             return;
         final double dist = Math.sqrt(d.start.distSqr(d.end));
         if (dist > Config.MAX_ROUTE_LENGTH.get()) {
-            fail(player, d, Component.translatable("longhaultracks.msg.too_long", (int) dist, Config.MAX_ROUTE_LENGTH.get()).getString());
+            fail(owner, d, Component.translatable("longhaultracks.msg.too_long", (int) dist, Config.MAX_ROUTE_LENGTH.get()).getString());
             return;
         }
         d.planning = true;
         d.message = Component.translatable("longhaultracks.msg.planning").getString();
-        syncDraft(player);
+        syncDraft(owner);
         final CompletableFuture<?> a = level.getChunkSource()
             .getChunkFuture(d.start.getX() >> 4, d.start.getZ() >> 4, ChunkStatus.FULL, true);
         final CompletableFuture<?> b = level.getChunkSource()
@@ -289,19 +299,19 @@ public final class JobManager extends SavedData {
         CompletableFuture.allOf(a, b).orTimeout(120, TimeUnit.SECONDS).whenCompleteAsync((v, err) -> {
             if (err != null) {
                 d.planning = false;
-                fail(player, d, "Could not load the end chunks: " + err.getMessage());
+                fail(owner, d, "Could not load the end chunks: " + err.getMessage());
                 return;
             }
             try {
-                planLoaded(player, level, d);
+                planLoaded(owner, name, level, d);
             } catch (final RuntimeException e) {
                 d.planning = false;
-                fail(player, d, "Planning failed: " + e);
+                fail(owner, d, "Planning failed: " + e);
             }
         }, server);
     }
 
-    private void planLoaded(final ServerPlayer player, final ServerLevel level, final Draft d) {
+    private void planLoaded(final UUID owner, final String name, final ServerLevel level, final Draft d) {
         if (d.startSurface)
             d.start = surface(level, d.start);
         if (d.endSurface)
@@ -312,13 +322,13 @@ public final class JobManager extends SavedData {
         final Anchor e = err.isEmpty() ? anchor(level, d.end, err) : null;
         if (!err.isEmpty()) {
             d.planning = false;
-            fail(player, d, err.toString());
+            fail(owner, d, err.toString());
             return;
         }
         final RoutePlanner.Layout lay = RoutePlanner.layout(s, e, Config.MAX_ROUTE_LENGTH.get(), err);
         if (lay == null) {
             d.planning = false;
-            fail(player, d, err.toString());
+            fail(owner, d, err.toString());
             return;
         }
         final RoutePlanner.Settings st = settings(level);
@@ -354,11 +364,12 @@ public final class JobManager extends SavedData {
         }, Util.backgroundExecutor()).whenCompleteAsync((res, ex) -> {
             d.planning = false;
             if (ex != null || res == null) {
-                fail(player, d, "Planning failed: " + ex);
+                com.mojang.logging.LogUtils.getLogger().error("[Long Haul Tracks] planning failed", ex);
+                fail(owner, d, "Planning failed: " + ex);
                 return;
             }
             if (res.error() != null) {
-                fail(player, d, res.error());
+                fail(owner, d, res.error());
                 return;
             }
             if (d.preview != null) {
@@ -367,8 +378,8 @@ public final class JobManager extends SavedData {
                     remove(old);
             }
             final Job j = new Job(UUID.randomUUID());
-            j.owner = player.getUUID();
-            j.ownerName = player.getGameProfile().getName();
+            j.owner = owner;
+            j.ownerName = name;
             j.dim = level.dimension();
             j.start = startPos;
             j.end = endPos;
@@ -389,8 +400,8 @@ public final class JobManager extends SavedData {
             setDirty();
             sendGeometry(j, null);
             sendStatus(j);
-            syncDraft(player);
-            player.displayClientMessage(Component.translatable("longhaultracks.msg.planned", j.length, j.bridgeLength,
+            syncDraft(owner);
+            msg(owner, Component.translatable("longhaultracks.msg.planned", j.length, j.bridgeLength,
                 j.tunnelLength).withStyle(ChatFormatting.GREEN), false);
         }, server);
     }
@@ -461,10 +472,60 @@ public final class JobManager extends SavedData {
         return Math.max(Config.MAX_PILLAR_DEPTH.get(), JJThunderCompat.profile(level).minPillarDepth());
     }
 
-    private void fail(final ServerPlayer player, final Draft d, final String msg) {
+    private void fail(final UUID owner, final Draft d, final String msg) {
         d.message = msg;
-        syncDraft(player);
-        player.displayClientMessage(Component.literal(msg).withStyle(ChatFormatting.RED), false);
+        syncDraft(owner);
+        msg(owner, Component.literal(msg).withStyle(ChatFormatting.RED), false);
+    }
+
+    private void msg(final UUID owner, final Component c, final boolean actionBar) {
+        final ServerPlayer p = server.getPlayerList().getPlayer(owner);
+        if (p != null)
+            p.displayClientMessage(c, actionBar);
+        else
+            com.mojang.logging.LogUtils.getLogger().info("[Long Haul Tracks] {}", c.getString());
+    }
+
+    /** Plans a route for any owner (console, command blocks): {@code surface} ends get their y from the terrain. */
+    public void planFor(final UUID owner, final String name, final ServerLevel level, final BlockPos a, final boolean surfA,
+                        final BlockPos b, final boolean surfB) {
+        final Draft d = drafts.computeIfAbsent(owner, k -> new Draft());
+        d.dim = level.dimension();
+        d.start = a;
+        d.startSurface = surfA;
+        d.end = b;
+        d.endSurface = surfB;
+        d.planning = false;
+        setDirty();
+        plan(owner, name);
+    }
+
+    /** Operator controls without a player: confirm a preview or fill a job's materials. */
+    public boolean admin(final UUID id, final Net.Action action) {
+        final Job j = jobs.get(id);
+        if (j == null)
+            return false;
+        if (action == Net.Action.CONFIRM && j.state == Job.State.PREVIEW) {
+            j.cursor = 0;
+            j.surveyCounts.clear();
+            j.state = Config.SURVEY_BEFORE_BUILD.get() ? Job.State.SURVEYING : Job.State.AWAITING_MATERIALS;
+            j.message = Component.translatable(j.state == Job.State.SURVEYING ? "longhaultracks.msg.surveying"
+                : "longhaultracks.msg.awaiting").getString();
+            final Draft d = drafts.get(j.owner);
+            if (d != null && j.id.equals(d.preview))
+                d.preview = null;
+        } else if (action == Net.Action.FILL) {
+            for (final String k : j.required.keySet())
+                j.supplied.put(k, Math.max(j.supplied.getOrDefault(k, 0L), j.required.get(k)));
+            j.supplied.put("longhaultracks:free", 1L);
+        } else if (action == Net.Action.CANCEL) {
+            refund(j.owner, j.supplied);
+            remove(j);
+            return true;
+        } else
+            return false;
+        afterSupply(j);
+        return true;
     }
 
     // ------------------------------------------------------------------------------------------- actions
@@ -484,7 +545,7 @@ public final class JobManager extends SavedData {
                 else
                     d.lining = rl;
                 setDirty();
-                syncDraft(player);
+                syncDraft(player.getUUID());
                 if (j != null && j.state == Job.State.PREVIEW && d.start != null && d.end != null)
                     plan(player);
             }
@@ -493,7 +554,7 @@ public final class JobManager extends SavedData {
                 if (rl != null && TrackMaterial.ALL.containsKey(rl)) {
                     d.track = rl;
                     setDirty();
-                    syncDraft(player);
+                    syncDraft(player.getUUID());
                     if (j != null && j.state == Job.State.PREVIEW && d.start != null && d.end != null)
                         plan(player);
                 }
@@ -505,7 +566,7 @@ public final class JobManager extends SavedData {
                     remove(j);
                 d.preview = null;
                 setDirty();
-                syncDraft(player);
+                syncDraft(player.getUUID());
             }
             case REPLAN -> plan(player);
             case CONFIRM -> {
@@ -525,7 +586,7 @@ public final class JobManager extends SavedData {
                     d.start = d.end = null;
                 }
                 setDirty();
-                syncDraft(player);
+                syncDraft(player.getUUID());
                 sendStatus(j);
             }
             case CANCEL -> {
@@ -673,8 +734,16 @@ public final class JobManager extends SavedData {
 
     // ---------------------------------------------------------------------------------------------- tick
 
+    private final transient List<Object[]> pendingRelease = new ArrayList<>();
+
     public void tick() {
         tick++;
+        pendingRelease.removeIf(o -> {
+            if ((int) o[1] > tick)
+                return false;
+            ((Builder) o[0]).releaseAll();
+            return true;
+        });
         final long deadline = System.nanoTime() + Config.MILLIS_PER_TICK.get() * 1_000_000L;
         int chunks = Config.CHUNKS_PER_TICK.get();
         for (final Job j : new ArrayList<>(jobs.values())) {
@@ -703,7 +772,7 @@ public final class JobManager extends SavedData {
             finishPhase(level, j, b);
             return false;
         }
-        b.ticketWindow();
+        b.ticketWindow(tick);
         final ChunkPos pos = j.corridor.chunks.get(j.cursor).pos;
         if (!b.ready(pos)) {
             final int w = waits.merge(j.id, 1, Integer::sum);
@@ -745,6 +814,7 @@ public final class JobManager extends SavedData {
             j.supplied.merge(item, -c, Long::sum);
             j.required.merge(item, -c, (a, x) -> Math.max(0, a + x));
         });
+        b.finished(j.cursor, tick);
         j.cursor++;
         setDirty();
         return true;
@@ -767,8 +837,7 @@ public final class JobManager extends SavedData {
             refund(j.owner, j.supplied);
             builders.remove(j.id);
             // keep the last window ticketed a little longer so Create's graph settles, then release
-            final Builder done = b;
-            server.tell(new net.minecraft.server.TickTask(server.getTickCount() + 100, done::releaseAll));
+            pendingRelease.add(new Object[] {b, tick + 100});
             notifyOwner(j, Component.translatable("longhaultracks.msg.complete_chat", j.length, j.start.toShortString(),
                 j.end.toShortString()).withStyle(ChatFormatting.GREEN));
             final ServerPlayer owner = server.getPlayerList().getPlayer(j.owner);
@@ -797,13 +866,16 @@ public final class JobManager extends SavedData {
         final Draft d = drafts.get(player.getUUID());
         if (d != null) {
             d.planning = false;
-            syncDraft(player);
+            syncDraft(player.getUUID());
         }
         giveRefunds(player);
     }
 
-    void syncDraft(final ServerPlayer player) {
-        final Draft d = draft(player);
+    void syncDraft(final UUID owner) {
+        final ServerPlayer player = server.getPlayerList().getPlayer(owner);
+        final Draft d = drafts.get(owner);
+        if (player == null || d == null)
+            return;
         PacketDistributor.sendToPlayer(player, new Net.Draft(d.dim.location().toString(), d.start, d.end,
             d.bridge.toString(), d.lining.toString(), d.track.toString(), d.message == null ? "" : d.message, d.planning));
     }
@@ -847,6 +919,8 @@ public final class JobManager extends SavedData {
     public void shutdown() {
         builders.values().forEach(Builder::releaseAll);
         builders.clear();
+        pendingRelease.forEach(o -> ((Builder) o[0]).releaseAll());
+        pendingRelease.clear();
     }
 
     /** True if {@code item} is a block item usable as bridge or lining material. */

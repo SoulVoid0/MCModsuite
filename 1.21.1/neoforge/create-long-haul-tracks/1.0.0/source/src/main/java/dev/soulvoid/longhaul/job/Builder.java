@@ -4,7 +4,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.trains.track.BezierConnection;
 import com.simibubi.create.content.trains.track.ITrackBlock;
 import com.simibubi.create.content.trains.track.TrackBlock;
@@ -69,22 +68,40 @@ public final class Builder {
 
     // ------------------------------------------------------------------------------------------ tickets
 
-    void ticketWindow() {
+    /** Chunk index -> server tick it was finished; kept ticketed for a while so Create's graph can settle. */
+    private final java.util.ArrayDeque<int[]> done = new java.util.ArrayDeque<>();
+    private static final int SETTLE_TICKS = 80;
+
+    void ticketWindow(final int now) {
         final int n = corridor.chunks.size();
-        for (int i = Math.max(0, job.cursor - KEEP_BEHIND); i < Math.min(n, job.cursor + PREFETCH); i++) {
-            final ChunkPos p = corridor.chunks.get(i).pos;
-            level.getChunkSource().addRegionTicket(TICKET, p, TICKET_RADIUS, p, true);
-        }
-        final int drop = job.cursor - KEEP_BEHIND - 1;
-        if (drop >= 0 && drop < n) {
-            final ChunkPos p = corridor.chunks.get(drop).pos;
-            level.getChunkSource().removeRegionTicket(TICKET, p, TICKET_RADIUS, p);
+        for (int i = job.cursor; i < Math.min(n, job.cursor + PREFETCH); i++)
+            ticket(corridor.chunks.get(i).pos);
+        while (done.size() > KEEP_BEHIND || !done.isEmpty() && now - done.peekFirst()[1] >= SETTLE_TICKS) {
+            final int[] d = done.peekFirst();
+            if (now - d[1] < SETTLE_TICKS)
+                break;
+            done.pollFirst();
+            if (d[0] < job.cursor || d[0] >= job.cursor + PREFETCH)
+                unticket(corridor.chunks.get(d[0]).pos);
         }
     }
 
+    void finished(final int idx, final int now) {
+        done.addLast(new int[] {idx, now});
+    }
+
+    private void ticket(final ChunkPos p) {
+        level.getChunkSource().addRegionTicket(TICKET, p, TICKET_RADIUS, p, true);
+    }
+
+    private void unticket(final ChunkPos p) {
+        level.getChunkSource().removeRegionTicket(TICKET, p, TICKET_RADIUS, p, true);
+    }
+
     void releaseAll() {
+        done.clear();
         for (final Corridor.ChunkWork w : corridor.chunks)
-            level.getChunkSource().removeRegionTicket(TICKET, w.pos, TICKET_RADIUS, w.pos);
+            unticket(w.pos);
     }
 
     boolean ready(final ChunkPos p) {
@@ -161,11 +178,27 @@ public final class Builder {
         // 6. curves (turns, S-bends and slopes)
         for (final Piece.Curve cv : w.curves)
             placeCurve(cv, simulate, ledger);
+        // 7. register with Create's train graph now instead of waiting for scheduled ticks, which only run in
+        //    entity-ticking chunks and could be lost if the chunk unloads first
+        if (!simulate) {
+            for (final Corridor.TrackBlock t : w.tracks)
+                propagate(t.pos());
+            for (final Piece.Curve cv : w.curves) {
+                propagate(cv.a());
+                propagate(cv.b());
+            }
+        }
+    }
+
+    private void propagate(final BlockPos p) {
+        final BlockState s = level.getBlockState(p);
+        if (s.getBlock() instanceof TrackBlock)
+            com.simibubi.create.content.trains.track.TrackPropagator.onRailAdded(level, p, s);
     }
 
     private void clear(final BlockPos p) {
         final BlockState s = level.getBlockState(p);
-        if (s.isAir() || s.getBlock() instanceof ITrackBlock || AllBlocks.FAKE_TRACK.has(s)
+        if (s.isAir() || s.getBlock() instanceof ITrackBlock || s.getBlock() instanceof com.simibubi.create.content.trains.track.FakeTrackBlock
             || s.getDestroySpeed(level, p) < 0)
             return;
         if (s.hasBlockEntity())
@@ -176,7 +209,7 @@ public final class Builder {
 
     private boolean needsSeal(final BlockPos p, final boolean tunnel, final boolean ceiling) {
         final BlockState s = level.getBlockState(p);
-        if (s.getBlock() instanceof ITrackBlock || AllBlocks.FAKE_TRACK.has(s))
+        if (s.getBlock() instanceof ITrackBlock || s.getBlock() instanceof com.simibubi.create.content.trains.track.FakeTrackBlock)
             return false;
         if (s.getBlock() instanceof LiquidBlock)
             return true;
