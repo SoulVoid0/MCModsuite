@@ -1,0 +1,64 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "MIT"
+
+[[mods]]
+modId = "longhaultracks"
+version = "${mod_version}"
+displayName = "Create: Long Haul Tracks"
+authors = "SoulVoid0"
+description = '''
+Plan and build Create train lines over extreme distances.
+
+- Track Surveyor: pick a start and an end (blocks, far-away terrain including Voxy LOD terrain, Xaero's World Map, or /longtrack coordinates). Points do not need to be loaded.
+- A hologram shows the route (green ground, cyan bridges, orange tunnels) and the materials it needs.
+- Supply the materials and the line is built chunk by chunk with chunk tickets: tunnels through mountains, bridges with pillars over valleys and water, track that follows the ground. Pick the bridge block yourself.
+- A point on existing track becomes a junction (or extends a dead end); crossings become Create crossings.
+- JJThunder To The Max terrain profile, Xaero's World Map / Xaero Train Map overlay, Voxy Atmosphere Compat distance bridge.
+'''
+
+[[mixins]]
+config = "longhaultracks.xaero.mixins.json"
+
+[[dependencies.longhaultracks]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1.219,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.longhaultracks]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.longhaultracks]]
+modId = "create"
+type = "required"
+versionRange = "[6.0.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.longhaultracks]]
+modId = "xaerotrainmap"
+type = "optional"
+versionRange = "*"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.longhaultracks]]
+modId = "xaeroworldmap"
+type = "optional"
+versionRange = "*"
+ordering = "AFTER"
+side = "CLIENT"
+
+# Any version: 1.1.0+ through its stable API, 1.0.0 through a fallback. Never required.
+[[dependencies.longhaultracks]]
+modId = "voxyatmocompat"
+type = "optional"
+versionRange = "*"
+ordering = "NONE"
+side = "CLIENT"
