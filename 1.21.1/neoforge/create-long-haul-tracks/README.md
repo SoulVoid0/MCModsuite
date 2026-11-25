@@ -1,0 +1,11 @@
+# Create: Long Haul Tracks (NeoForge 1.21.1)
+
+Plans and builds Create train lines over very long distances, with tunnels, bridges and junctions. Each version has
+its own folder with the jar and the source it was built from.
+
+| Version | Jar | Notes |
+|---|---|---|
+| [1.1.0](1.1.0/) | `1.1.0/create-long-haul-tracks-1.1.0.jar` | Latest. Terrain-following route search, switchbacks/spirals, 1 track per 16 blocks, styles, clear-only mode |
+| [1.0.0](1.0.0/) | `1.0.0/create-long-haul-tracks-1.0.0.jar` | First release |
+
+Install one jar only (newest recommended). Works with any Voxy Atmosphere Compat version.
