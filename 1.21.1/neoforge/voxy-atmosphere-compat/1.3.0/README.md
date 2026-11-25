@@ -1,6 +1,6 @@
 # Voxy Atmosphere Compat 1.3.0 (NeoForge 1.21.1)
 
-**Jar:** `voxy-atmosphere-compat-1.3.0.jar` in this folder. Same targets as [1.2.0](../1.2.0/README.md), plus tested
+**Jar:** `voxy-atmosphere-compat-1.3.0.jar` in this folder (superseded by [1.4.0](../1.4.0/README.md)). Same targets as [1.2.0](../1.2.0/README.md), plus tested
 with Iris 1.8.14-beta.1 and Complementary Reimagined r5.10. Everything from 1.2.0 is included; same `VoxyAtmoApi`.
 
 ## Fix: clouds drawn over Voxy's far terrain with a shaderpack
