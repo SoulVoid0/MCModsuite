@@ -1,0 +1,19 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "dev.soulvoid.voxyatmo.mixin.simpleclouds",
+    "plugin": "dev.soulvoid.voxyatmo.core.SimpleCloudsMixinPlugin",
+    "compatibilityLevel": "JAVA_21",
+    "client": [
+        "CloudLodExtendMixin",
+        "CloudLodRebuildMixin",
+        "ShaderSupportPipelineMixin",
+        "SimpleCloudsFogMixin",
+        "SimpleCloudsRainOrderMixin",
+        "StormFogShaftsMixin",
+        "CloudLodDepthMergeMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 0
+    }
+}

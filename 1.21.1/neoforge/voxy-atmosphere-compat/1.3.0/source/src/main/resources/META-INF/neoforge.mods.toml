@@ -1,0 +1,68 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "MIT"
+
+[[mods]]
+modId = "voxyatmocompat"
+version = "${mod_version}"
+displayName = "Voxy Atmosphere Compat"
+authors = "SoulVoid0"
+description = '''
+Compatibility patch between voxy-forged, Voxy SeedGen, Simple Clouds and Project Atmosphere (NeoForge 1.21.1).
+
+- Clouds are depth-tested against Voxy's LOD terrain, so they sit correctly in front of and behind distant terrain whether you are above or below them.
+- Cloud render distance follows Voxy SeedGen's generation distance (or Voxy's LOD distance when SeedGen is absent), and Simple Clouds' cloud area is grown to reach it.
+- Far clouds fade softly to transparent instead of ending in an opaque fog-coloured slab, so its striped, holed side wall is gone.
+- More cloud formations are allowed and rendered (nearest first), and Project Atmosphere spawns them out to the cloud distance, so the sky is covered as far as the clouds reach.
+- The cloud layer is lifted above the terrain around you (sampled from the world generator out to the cloud distance), so tall worlds and mountains no longer cut it into stripes and slabs.
+- With an Iris shaderpack that draws Voxy's far terrain itself (e.g. Complementary), that terrain's depth is merged into the cloud depth so clouds no longer draw over distant mountains.
+- Simple Clouds' storm-fog rain shafts are off by default (they hung in mid-air under lifted clouds).
+- Stable API for other mods: dev.soulvoid.voxyatmo.api.VoxyAtmoApi.
+- voxy-forged's built-in distant generation stands down when Voxy SeedGen is installed, so the two never generate the same area twice.
+
+Every patch only activates when the mods it bridges are installed.
+'''
+
+[[mixins]]
+config = "voxyatmocompat.simpleclouds.mixins.json"
+
+[[mixins]]
+config = "voxyatmocompat.voxy.mixins.json"
+
+[[mixins]]
+config = "voxyatmocompat.clouds.mixins.json"
+
+[[dependencies.voxyatmocompat]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.voxyatmocompat]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.voxyatmocompat]]
+modId = "voxy"
+type = "optional"
+versionRange = "*"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.voxyatmocompat]]
+modId = "simpleclouds"
+type = "optional"
+versionRange = "[0.7.3,)"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.voxyatmocompat]]
+modId = "projectatmosphere"
+type = "optional"
+versionRange = "*"
+ordering = "AFTER"
+side = "BOTH"

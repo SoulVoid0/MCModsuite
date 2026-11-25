@@ -1,0 +1,59 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "MIT"
+
+[[mods]]
+modId = "voxyatmocompat"
+version = "${mod_version}"
+displayName = "Voxy Atmosphere Compat"
+authors = "SoulVoid0"
+description = '''
+Compatibility patch between voxy-forged, Voxy SeedGen, Simple Clouds and Project Atmosphere (NeoForge 1.21.1).
+
+- Clouds are depth-tested against Voxy's LOD terrain, so they sit correctly in front of and behind distant terrain whether you are above or below them.
+- Cloud render distance follows Voxy SeedGen's generation distance (or Voxy's LOD distance when SeedGen is absent), and Simple Clouds' cloud area is grown to reach it.
+- voxy-forged's built-in distant generation stands down when Voxy SeedGen is installed, so the two never generate the same area twice.
+
+Every patch only activates when the mods it bridges are installed.
+'''
+
+[[mixins]]
+config = "voxyatmocompat.simpleclouds.mixins.json"
+
+[[mixins]]
+config = "voxyatmocompat.voxy.mixins.json"
+
+[[dependencies.voxyatmocompat]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.voxyatmocompat]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.voxyatmocompat]]
+modId = "voxy"
+type = "optional"
+versionRange = "*"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.voxyatmocompat]]
+modId = "simpleclouds"
+type = "optional"
+versionRange = "[0.7.3,)"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.voxyatmocompat]]
+modId = "projectatmosphere"
+type = "optional"
+versionRange = "*"
+ordering = "AFTER"
+side = "BOTH"
