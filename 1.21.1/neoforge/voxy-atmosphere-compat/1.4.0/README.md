@@ -1,6 +1,6 @@
 # Voxy Atmosphere Compat 1.4.0 (NeoForge 1.21.1)
 
-**Jar:** `voxy-atmosphere-compat-1.4.0.jar` in this folder. Same targets as [1.3.0](../1.3.0/README.md). Everything
+**Jar:** `voxy-atmosphere-compat-1.4.0.jar` in this folder (superseded by [1.5.0](../1.5.0/README.md)). Same targets as [1.3.0](../1.3.0/README.md). Everything
 from 1.3.0 is included; same `VoxyAtmoApi` (apiVersion 1).
 
 ## Fix: clouds cutting through nearby mountains
