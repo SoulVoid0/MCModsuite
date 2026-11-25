@@ -1,0 +1,16 @@
+{
+    "required": true,
+    "minVersion": "0.8",
+    "package": "dev.soulvoid.voxyatmo.mixin.voxy",
+    "plugin": "dev.soulvoid.voxyatmo.core.VoxyMixinPlugin",
+    "compatibilityLevel": "JAVA_21",
+    "client": [
+        "DistantGenerationManagerMixin",
+        "SeedgenGeometryCapacityMixin",
+        "SeedgenRingGuardMixin",
+        "WorldEngineSaveSectionMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 0
+    }
+}

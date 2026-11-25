@@ -1,6 +1,6 @@
 # Voxy Atmosphere Compat 1.1.0 (NeoForge 1.21.1)
 
-**Jar:** `voxy-atmosphere-compat-1.1.0.jar` in this folder. Built against NeoForge 21.1.219, voxy-forged 1.1.0,
+**Jar:** `voxy-atmosphere-compat-1.1.0.jar` in this folder (superseded by [1.2.0](../1.2.0/README.md)). Built against NeoForge 21.1.219, voxy-forged 1.1.0,
 Simple Clouds 0.7.3, Voxy SeedGen 0.3.1, Project Atmosphere 0.9.1.2. Everything from [1.0.0](../1.0.0/README.md)
 is still included; this file lists what changed.
 

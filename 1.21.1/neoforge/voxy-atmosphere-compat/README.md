@@ -5,7 +5,8 @@ folder with the jar and the source it was built from.
 
 | Version | Jar | Notes |
 |---|---|---|
-| [1.1.0](1.1.0/) | `1.1.0/voxy-atmosphere-compat-1.1.0.jar` | Latest. Soft far cloud edges, much more cloud coverage, stable `VoxyAtmoApi` |
+| [1.2.0](1.2.0/) | `1.2.0/voxy-atmosphere-compat-1.2.0.jar` | Latest. Clouds lifted above the terrain (no more stripes/slabs in tall worlds) |
+| [1.1.0](1.1.0/) | `1.1.0/voxy-atmosphere-compat-1.1.0.jar` | Soft far cloud edges, much more cloud coverage, stable `VoxyAtmoApi` |
 | [1.0.0](1.0.0/) | `1.0.0/voxy-atmosphere-compat-1.0.0.jar` | First release |
 
 Install one jar only (newest recommended).
