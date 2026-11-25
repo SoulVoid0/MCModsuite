@@ -1,6 +1,6 @@
 # Voxy Atmosphere Compat 1.2.0 (NeoForge 1.21.1)
 
-**Jar:** `voxy-atmosphere-compat-1.2.0.jar` in this folder. Same targets as [1.1.0](../1.1.0/README.md)
+**Jar:** `voxy-atmosphere-compat-1.2.0.jar` in this folder (superseded by [1.3.0](../1.3.0/README.md)). Same targets as [1.1.0](../1.1.0/README.md)
 (NeoForge 21.1.219, voxy-forged 1.1.0, Simple Clouds 0.7.3, Voxy SeedGen 0.3.1, Project Atmosphere 0.9.1.2).
 Everything from 1.1.0 is included; same `VoxyAtmoApi` (apiVersion 1).
 
