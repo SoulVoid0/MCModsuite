@@ -1,0 +1,92 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "MIT"
+
+[[mods]]
+modId = "pmweatheradvcompat"
+version = "${mod_version}"
+displayName = "PMWeather Advanced Compat"
+authors = "SoulVoid0"
+description = '''
+Ties ProtoManly's Weather + PMWeatherCM1 to Voxy / Voxy SeedGen distant terrain, with PMPHYSICS and PMWeather Aeronautics compat in the loop (NeoForge 1.21.1).
+
+- PMWeatherCM1 forms and places storms across the whole area Voxy / Voxy SeedGen renders (up to CM1's 32000-block draw limit), instead of CM1's fixed 10000-block circle and PMWeather's 2048-block spawn range. Part of the spawn checks stay local so storms still reach you.
+- The nearest CM1-simulated storm is always the one CM1 draws (CM1 draws one supercell and one cyclone at a time, previously whichever was spawned first).
+- PMPHYSICS waves and PMWeather Aeronautics forces read PMWeather's wind, which CM1 drives, so CM1 storms move water and Aeronautics/Sable creations.
+- Not shader compatible: Iris and Oculus are declared incompatible.
+'''
+
+[[mixins]]
+config = "pmweatheradvcompat.mixins.json"
+
+[[dependencies.pmweatheradvcompat]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1.234,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.pmweatheradvcompat]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1]"
+ordering = "NONE"
+side = "BOTH"
+
+# PMWeatherCM1 1.1.7 only accepts PMWeather 0.16.4.
+[[dependencies.pmweatheradvcompat]]
+modId = "pmweather"
+type = "required"
+versionRange = "[0.16.4]"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.pmweatheradvcompat]]
+modId = "pmweathercm1"
+type = "required"
+versionRange = "[1.1.7,)"
+ordering = "AFTER"
+side = "BOTH"
+
+# PMPHYSICS (mod id pmocean). Needs a dependency override in config/fml.toml to load next to PMWeather 0.16.4, see README.
+[[dependencies.pmweatheradvcompat]]
+modId = "pmocean"
+type = "optional"
+versionRange = "*"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.pmweatheradvcompat]]
+modId = "pmweather_aeronautics"
+type = "optional"
+versionRange = "[1.1,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.pmweatheradvcompat]]
+modId = "voxy"
+type = "optional"
+versionRange = "*"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.pmweatheradvcompat]]
+modId = "voxyseedgen"
+type = "optional"
+versionRange = "*"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.pmweatheradvcompat]]
+modId = "iris"
+type = "incompatible"
+reason = "PMWeather Advanced Compat is made for vanilla rendering only. Shaderpacks (Iris) are not supported: remove Iris."
+versionRange = "*"
+side = "CLIENT"
+
+[[dependencies.pmweatheradvcompat]]
+modId = "oculus"
+type = "incompatible"
+reason = "PMWeather Advanced Compat is made for vanilla rendering only. Shaderpacks (Oculus) are not supported: remove Oculus."
+versionRange = "*"
+side = "CLIENT"

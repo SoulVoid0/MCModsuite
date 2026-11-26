@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.soulvoid.pmwadv.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "plugin": "dev.soulvoid.pmwadv.core.Cm1SpawnRadiusPlugin",
+  "mixins": [
+    "Cm1SpawnerAnchorMixin",
+    "SamplePointChunkMixin",
+    "FireIntensityChunkMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

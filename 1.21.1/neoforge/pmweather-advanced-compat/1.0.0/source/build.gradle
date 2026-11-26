@@ -1,0 +1,95 @@
+plugins {
+    id 'java'
+    id 'net.neoforged.moddev' version '2.0.+'
+}
+
+group = 'dev.soulvoid'
+version = project.mod_version
+base.archivesName = 'pmweather-advanced-compat'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+// Headless in-world tests (GameTest server). Not part of the released jar.
+sourceSets {
+    gametest {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+        // JJThunder (datapack, Modrinth 1NnAVIR5 v0.6.0) extracted into run-jj/ turns the test world into a JJThunder
+        // world: its data/ is loaded as this test mod's own (always on) data. Never committed.
+        if (file('run-jj/data').exists()) resources.srcDir 'run-jj'
+    }
+}
+
+repositories {
+    mavenCentral()
+    flatDir { dirs 'libs' }
+}
+
+neoForge {
+    version = project.neoforge_version
+
+    parchment {
+        minecraftVersion = project.parchment_minecraft
+        mappingsVersion = project.parchment_version
+    }
+
+    runs {
+        client {
+            client()
+            gameDirectory = file('run')
+        }
+        // Headless end-to-end check: creates a world, runs the GameTests on the integrated server, quits.
+        // CM1 cannot run on a dedicated server (its WeatherHandlerClientMixin loads client classes), so the
+        // GameTests run here instead of runGameTestServer. Use under xvfb-run.
+        autoTest {
+            client()
+            gameDirectory = file('run-autotest')
+            sourceSet = sourceSets.gametest
+            systemProperty 'neoforge.enableGameTest', 'true'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            systemProperty 'pmwadv.autotest', 'true'
+            jvmArgument '-Xmx6G'
+        }
+        gameTestServer {
+            type = 'gameTestServer'
+            gameDirectory = file('run-gametest')
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            sourceSet = sourceSets.gametest
+            jvmArgument '-Xmx6G'
+        }
+    }
+
+    mods {
+        pmweatheradvcompat {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.gametest
+        }
+    }
+}
+
+configurations {
+    gametestCompileOnly.extendsFrom compileOnly
+}
+
+dependencies {
+    // PMWeather and PMWeatherCM1 are provided at runtime by the modpack and never bundled (both All Rights Reserved).
+    // See libs/README.md.
+    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+tasks.named('processResources', ProcessResources) {
+    final def props = [mod_version: project.mod_version]
+    inputs.properties(props)
+    filesMatching('META-INF/neoforge.mods.toml') { expand(props) }
+}
+
+tasks.named('jar', Jar) {
+    manifest {
+        attributes([
+            'Specification-Title'   : 'pmweather-advanced-compat',
+            'Specification-Version' : project.version,
+            'Implementation-Title'  : 'PMWeather Advanced Compat',
+            'Implementation-Version': project.version
+        ])
+    }
+}

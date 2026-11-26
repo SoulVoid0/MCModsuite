@@ -1,0 +1,9 @@
+.gradle/
+build/
+run/
+libs/*.jar
+*.iml
+.idea/
+run-gametest/
+run-autotest/
+run-jj/
