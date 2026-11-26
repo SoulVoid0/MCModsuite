@@ -1,5 +1,7 @@
 # Voxy Atmosphere Compat 1.5.0 (NeoForge 1.21.1)
 
+> Superseded by [1.6.0](../1.6.0/README.md).
+
 **Jar:** `voxy-atmosphere-compat-1.5.0.jar` in this folder. Same targets as [1.4.0](../1.4.0/README.md). Everything
 from 1.4.0 is included; same `VoxyAtmoApi` (apiVersion 1).
 
