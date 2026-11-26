@@ -1,0 +1,88 @@
+plugins {
+    id 'java'
+    id 'net.neoforged.moddev' version '2.0.+'
+}
+
+group = 'dev.soulvoid'
+version = project.mod_version
+base.archivesName = 'create-long-haul-tracks'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+// Headless in-world tests (GameTest server): plan, survey and build real routes. Not part of the released jar.
+sourceSets {
+    gametest {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+
+repositories {
+    mavenCentral()
+    flatDir { dirs 'libs' }
+}
+
+neoForge {
+    version = project.neoforge_version
+
+    parchment {
+        minecraftVersion = project.parchment_minecraft
+        mappingsVersion = project.parchment_version
+    }
+
+    runs {
+        client {
+            client()
+            gameDirectory = file('run')
+        }
+        gameTestServer {
+            type = "gameTestServer"
+            gameDirectory = file('run-gametest')
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'longhaultracks'
+            // -PlhtOnly=climb runs only the named route specs of the GameTest
+            systemProperty 'lht.debug', 'true'
+            systemProperty 'lht.bh', (project.findProperty('lhtBh') ?: '48').toString()
+            systemProperty 'lht.bs', (project.findProperty('lhtBs') ?: '128').toString()
+            systemProperty 'lht.deep', (project.findProperty('lhtDeep') ?: '0.04').toString()
+            systemProperty 'lht.serp', (project.findProperty('lhtSerp') ?: 'false').toString()
+            systemProperty 'lht.noJJ', (project.findProperty('lhtNoJJ') ?: 'false').toString()
+            systemProperty 'lht.only', (project.findProperty('lhtOnly') ?: '').toString()
+            systemProperty 'lht.bench', (project.findProperty('lhtBench') ?: 'climb,big,user,far').toString()
+            sourceSet = sourceSets.gametest
+        }
+    }
+
+    mods {
+        longhaultracks {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.gametest
+        }
+    }
+}
+
+configurations {
+    gametestCompileOnly.extendsFrom compileOnly
+}
+
+dependencies {
+    // Create (+ its bundled Flywheel and Ponder/Catnip) and Xaero's World Map are provided by the modpack at
+    // runtime and are never bundled. See libs/README.md for the jars to drop in.
+    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+tasks.named('processResources', ProcessResources) {
+    final def props = [mod_version: project.mod_version]
+    inputs.properties(props)
+    filesMatching('META-INF/neoforge.mods.toml') { expand(props) }
+}
+
+tasks.named('jar', Jar) {
+    manifest {
+        attributes([
+            'Specification-Title'   : 'create-long-haul-tracks',
+            'Specification-Version' : project.version,
+            'Implementation-Title'  : 'Create: Long Haul Tracks',
+            'Implementation-Version': project.version
+        ])
+    }
+}
